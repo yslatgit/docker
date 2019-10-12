@@ -1,0 +1,52 @@
+FROM centos:7.6.1810
+
+LABEL version="1.0" desp="泰禾考勤系统"
+
+USER root
+
+ADD jdk1.8.0_191.tgz /usr/local/
+ADD apache-tomcat-8.5.35.tar.gz /usr/local/
+
+ENV JAVA_HOME /usr/local/jdk1.8.0_191/
+ENV CATALINA_HOME /usr/local/apache-tomcat-8.5.35
+ENV PATH $PATH:$JAVA_HOME/bin:$CATALINA_HOME/bin
+
+#设置源路径以及目标路径的变量
+ENV SRC_PATH Tahoe
+ENV TARGET_PATH $CATALINA_HOME/webapps/
+
+#指定工作路径
+WORKDIR $TARGET_PATH
+
+#添加项目文件>>>>>
+#>主应用VUE前端
+ADD $SRC_PATH/hrca.zip $TARGET_PATH
+#>sso我的考勤页面前端
+ADD $SRC_PATH/kqcalender.zip $TARGET_PATH 
+#>移动打卡后端
+ADD $SRC_PATH/mobilecard.war $TARGET_PATH
+#>移动查询考勤接口后端
+ADD $SRC_PATH/platform.war $TARGET_PATH
+#>报表页面前端
+ADD $SRC_PATH/reports.zip $TARGET_PATH 
+#>报表后端
+ADD $SRC_PATH/report.war $TARGET_PATH
+#>主应用后端
+ADD $SRC_PATH/taiheattendance.war $TARGET_PATH
+#>移动打卡前端
+ADD $SRC_PATH/webapp.zip $TARGET_PATH
+
+#修改配置文件
+ADD server.xml $CATALINA_HOME/conf/
+
+#设置导出文件路径
+RUN mkdir -p $CATALINA_HOME/exportfile
+
+#解压zip文件
+RUN yum install -y unzip && unzip \*.zip && rm -rf *.zip
+
+#暴露8800端口
+EXPOSE 8800
+
+#启动时运行tomcat
+CMD ["catalina.sh","run"]
